@@ -373,7 +373,7 @@ RUBY
     register_tilt_filter "Coffee", :alias => "coffeescript", :extend => "Javascript"
 
     # @!parse module Babel; end
-    register_tilt_filter "Babel", extend: "Javascript"
+    register_tilt_filter "Babel", alias: "es6", extend: "Javascript"
 
     # Parses the filtered text with ERB.
     # Not available if the {file:REFERENCE.md#suppress_eval-option

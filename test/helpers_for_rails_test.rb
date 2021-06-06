@@ -135,21 +135,6 @@ HAML
     assert_equal '/foo', fragment.css('form').first.attributes['action'].to_s
   end
 
-  def test_is_haml
-    assert(!ActionView::Base.new(ActionView::LookupContext.new(''), {}, nil).is_haml?)
-    assert_equal("true\n", render("= is_haml?", :action_view))
-    assert_equal("false", @base.render(:inline => '<%= is_haml? %>'))
-    assert_equal("false\n", render("= render :inline => '<%= is_haml? %>'", :action_view))
-  end
-
-  def test_page_class
-    controller = Struct.new(:controller_name, :action_name).new('troller', 'tion')
-    scope = Struct.new(:controller).new(controller)
-    result = render("%div{:class => page_class} MyDiv", :scope => scope)
-    expected = "<div class='troller tion'>MyDiv</div>\n"
-    assert_equal expected, result
-  end
-
   def test_indented_capture
     assert_equal("  Foo\n  ", @base.render(:inline => "  <% res = capture do %>\n  Foo\n  <% end %><%= res %>"))
   end

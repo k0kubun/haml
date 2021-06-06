@@ -68,8 +68,7 @@ module Haml
     def precompiled_with_ambles(local_names, after_preamble: '')
       preamble = <<END.tr("\n", ';')
 begin
-extend Haml::Helpers
-_hamlout = @haml_buffer = Haml::Buffer.new(haml_buffer, #{Options.new(options).for_buffer.inspect})
+_hamlout = @haml_buffer = Haml::Buffer.new(@haml_buffer, #{Options.new(options).for_buffer.inspect})
 _erbout = _hamlout.buffer
 #{after_preamble}
 END

@@ -25,12 +25,6 @@ module Haml
 
       new.compile(template, source)
     end
-
-    def cache_fragment(block, name = {}, options = nil)
-      @view.fragment_for(block, name, options) do
-        eval("_hamlout.buffer", block.binding)
-      end
-    end
   end
 end
 

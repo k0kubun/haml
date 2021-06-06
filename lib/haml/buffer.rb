@@ -73,19 +73,6 @@ module Haml
       @active
     end
 
-    # @return [Fixnum] The current indentation level of the document
-    def tabulation
-      @real_tabs + @tabulation
-    end
-
-    # Sets the current tabulation of the document.
-    #
-    # @param val [Fixnum] The new tabulation
-    def tabulation=(val)
-      val = val - @real_tabs
-      @tabulation = val > -1 ? val : 0
-    end
-
     # @param upper [Buffer] The parent buffer
     # @param options [{Symbol => Object}] An options hash.
     #   See {Haml::Engine#options\_for\_buffer}
@@ -95,11 +82,6 @@ module Haml
       @options    = Options.buffer_defaults
       @options    = @options.merge(options) unless options.empty?
       @buffer     = new_encoded_string
-      @tabulation = 0
-
-      # The number of tabs that Engine thinks we should have
-      # @real_tabs + @tabulation is the number of tabs actually output
-      @real_tabs = 0
     end
 
     # Appends text to the buffer, properly tabulated.
@@ -110,24 +92,7 @@ module Haml
     #   or decrease the document's indentation
     # @param dont_tab_up [Boolean] If true, don't indent the first line of `text`
     def push_text(text, tab_change, dont_tab_up)
-      if @tabulation > 0
-        # Have to push every line in by the extra user set tabulation.
-        # Don't push lines with just whitespace, though,
-        # because that screws up precompiled indentation.
-        text.gsub!(/^(?!\s+$)/m, tabs)
-        text.sub!(tabs, '') if dont_tab_up
-      end
-
-      @real_tabs += tab_change
       @buffer << text
-    end
-
-    # Modifies the indentation of the document.
-    #
-    # @param tab_change [Fixnum] The number of tabs by which to increase
-    #   or decrease the document's indentation
-    def adjust_tabs(tab_change)
-      @real_tabs += tab_change
     end
 
     # Remove the whitespace from the right side of the buffer string.
@@ -141,42 +106,10 @@ module Haml
       buffer << buffer.slice!(capture_position..-1).rstrip
     end
 
-    # Works like #{find_and_preserve}, but allows the first newline after a
-    # preserved opening tag to remain unencoded, and then outdents the content.
-    # This change was motivated primarily by the change in Rails 3.2.3 to emit
-    # a newline after textarea helpers.
-    #
-    # @param input [String] The text to process
-    # @since Haml 4.0.1
-    # @private
-    def fix_textareas!(input)
-      return input unless input.include?('<textarea'.freeze)
-
-      pattern = /<(textarea)([^>]*)>(\n|&#x000A;)(.*?)<\/textarea>/im
-      input.gsub!(pattern) do |s|
-        match = pattern.match(s)
-        content = match[4]
-        if match[3] == '&#x000A;'
-          content.sub!(/\A /, '&#x0020;')
-        else
-          content.sub!(/\A[ ]*/, '')
-        end
-        "<#{match[1]}#{match[2]}>\n#{content}</#{match[1]}>"
-      end
-      input
-    end
-
     private
 
     def new_encoded_string
       "".encode(options[:encoding])
-    end
-
-    @@tab_cache = {}
-    # Gets `count` tabs. Mostly for internal use.
-    def tabs(count = 0)
-      tabs = [count + @tabulation, 0].max
-      @@tab_cache[tabs] ||= '  ' * tabs
     end
   end
 end

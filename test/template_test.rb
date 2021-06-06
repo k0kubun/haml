@@ -9,7 +9,7 @@ require 'template_test_helper'
 class TemplateTest < Haml::TestCase
   TEMPLATES = %w{          very_basic        standard
     original_engine        list             helpful
-    silent_script          tag_parsing       just_stuff  partials
+    silent_script          tag_parsing       just_stuff
     nuke_inner_whitespace  bemit
     render_layout partial_layout_erb escape_safe_buffer}.freeze
 

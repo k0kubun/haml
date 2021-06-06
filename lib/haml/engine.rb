@@ -111,8 +111,7 @@ module Haml
     # @param block [#to_proc] A block that can be yielded to within the template
     # @return [String] The rendered template
     def render(scope = Object.new, locals = {}, &block)
-      parent = scope.instance_variable_defined?(:@haml_buffer) ? scope.instance_variable_get(:@haml_buffer) : nil
-      buffer = Haml::Buffer.new(parent, @options.for_buffer)
+      buffer = Haml::Buffer.new(nil, @options.for_buffer)
 
       if scope.is_a?(Binding)
         scope_object = eval("self", scope)
@@ -124,7 +123,6 @@ module Haml
 
       set_locals(locals.merge(:_hamlout => buffer, :_erbout => buffer.buffer), scope, scope_object)
 
-      scope_object.extend(Haml::Helpers)
       scope_object.instance_variable_set(:@haml_buffer, buffer)
       begin
         eval(@temple_engine.precompiled_with_return_value, scope, @options.filename, @options.line)

@@ -659,7 +659,7 @@ module Haml
 
       begin
         # Old attributes often look like a valid Hash literal, but it sometimes allow code like
-        # `{ hash, foo: bar }`, which is compiled to `_hamlout.attributes({}, nil, hash, foo: bar)`.
+        # `{ hash, foo: bar }`, which is compiled to `Haml::AttributeBuilder.build(..., hash, foo: bar)`.
         #
         # To scan such code correctly, this scans `a( hash, foo: bar }` instead, stops when there is
         # 1 more :on_embexpr_end (the last '}') than :on_embexpr_beg, and resurrects '{' afterwards.

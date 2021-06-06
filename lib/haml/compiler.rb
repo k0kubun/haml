@@ -284,9 +284,9 @@ module Haml
         text = "(#{text}).strip"
       end
       if opts[:preserve_tag]
-        text = "_hamlout.fix_textareas!(::Haml::Helpers.preserve(#{text}))"
+        text = "::Haml::Helpers.fix_textareas!(::Haml::Helpers.preserve(#{text}))"
       elsif opts[:preserve_script]
-        text = "_hamlout.fix_textareas!(::Haml::Helpers.find_and_preserve(#{text}, _hamlout.options[:preserve]))"
+        text = "::Haml::Helpers.fix_textareas!(::Haml::Helpers.find_and_preserve(#{text}, #{options[:preserve].inspect}))"
       end
       "#{text};"
     end

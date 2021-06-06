@@ -3,24 +3,11 @@
 require 'erb'
 
 module Haml
-  # This module contains various helpful methods to make it easier to do various tasks.
-  # {Haml::Helpers} is automatically included in the context
-  # that a Haml template is parsed in, so all these methods are at your
-  # disposal from within the template.
   module Helpers
-    self.extend self
-
     # Uses \{#preserve} to convert any newlines inside whitespace-sensitive tags
     # into the HTML entities for endlines.
     #
     # @param tags [Array<String>] Tags that should have newlines escaped
-    #
-    # @overload find_and_preserve(input, tags = haml_buffer.options[:preserve])
-    #   Escapes newlines within a string.
-    #
-    #   @param input [String] The string within which to escape newlines
-    # @overload find_and_preserve(tags = haml_buffer.options[:preserve])
-    #   Escapes newlines within a block of Haml code.
     def self.find_and_preserve(input = nil, tags)
       tags = tags.map { |tag| Regexp.escape(tag) }.join('|')
       re = /<(#{tags})([^>]*)>(.*?)(<\/\1>)/im
@@ -61,7 +48,7 @@ module Haml
     #
     # @param text [String] The string to sanitize
     # @return [String] The sanitized string
-    def html_escape(text)
+    def self.html_escape(text)
       CGI.escapeHTML(text.to_s)
     end
 
@@ -82,13 +69,29 @@ module Haml
       text.gsub(HTML_ESCAPE_ONCE_REGEX, HTML_ESCAPE)
     end
 
-    private
-
-    # The current {Haml::Buffer} object.
+    # Works like #{find_and_preserve}, but allows the first newline after a
+    # preserved opening tag to remain unencoded, and then outdents the content.
+    # This change was motivated primarily by the change in Rails 3.2.3 to emit
+    # a newline after textarea helpers.
     #
-    # @return [Haml::Buffer]
-    def haml_buffer
-      @haml_buffer if defined? @haml_buffer
+    # @param input [String] The text to process
+    # @since Haml 4.0.1
+    # @private
+    def self.fix_textareas!(input)
+      return input unless input.include?('<textarea'.freeze)
+
+      pattern = /<(textarea)([^>]*)>(\n|&#x000A;)(.*?)<\/textarea>/im
+      input.gsub!(pattern) do |s|
+        match = pattern.match(s)
+        content = match[4]
+        if match[3] == '&#x000A;'
+          content.sub!(/\A /, '&#x0020;')
+        else
+          content.sub!(/\A[ ]*/, '')
+        end
+        "<#{match[1]}#{match[2]}>\n#{content}</#{match[1]}>"
+      end
+      input
     end
   end
 end

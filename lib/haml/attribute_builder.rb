@@ -6,6 +6,18 @@ module Haml
     INVALID_ATTRIBUTE_NAME_REGEX = /[ \0"'>\/=]/
 
     class << self
+      def build(class_id, obj_ref, *attributes_hashes)
+        attributes = class_id
+        attributes_hashes.each do |old|
+          result = {}
+          old.each { |k, v| result[k.to_s] = v }
+          merge_attributes!(attributes, result)
+        end
+        merge_attributes!(attributes, parse_object_ref(obj_ref)) if obj_ref
+        # TODO: options
+        build_attributes(html?, "'", true, true, attributes)
+      end
+
       def build_attributes(is_html, attr_wrapper, escape_attrs, hyphenate_data_attrs, attributes = {})
         # @TODO this is an absolutely ridiculous amount of arguments. At least
         # some of this needs to be moved into an instance method.

@@ -33,17 +33,6 @@ class BindingTest < TestBase
     assert_equal("12\nFOO\n", "foo".dup.render_haml { 12 })
   end
 
-  def test_def_method_locals
-    obj = Object.new
-    engine("%p= foo\n.bar{:baz => baz}= boom").def_method(obj, :render, :foo, :baz, :boom)
-    assert_equal("<p>1</p>\n<div baz='2' class='bar'>3</div>\n", obj.render(:foo => 1, :baz => 2, :boom => 3))
-  end
-
-  def test_render_proc_locals
-    proc = engine("%p= foo\n.bar{:baz => baz}= boom").render_proc(Object.new, :foo, :baz, :boom)
-    assert_equal("<p>1</p>\n<div baz='2' class='bar'>3</div>\n", proc[:foo => 1, :baz => 2, :boom => 3])
-  end
-
   def test_render_proc_with_binding
     assert_equal("FOO\n", engine("= upcase").render_proc("foo".dup.instance_eval{binding}).call)
   end
@@ -75,10 +64,5 @@ HTML
 %div{hash}
 HAML
     assert_equal(hash, {:color => 'red'})
-  end
-
-  def test_local_assigns_dont_modify_class
-    assert_equal("bar\n", render("= foo", :locals => {:foo => 'bar'}))
-    assert_nil(defined?(foo))
   end
 end

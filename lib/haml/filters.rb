@@ -266,12 +266,6 @@ RUBY
       end
     end
 
-    # Parses the filtered text with the normal Ruby interpreter. Creates an IO
-    # object named `haml_io`, anything written to it is output into the Haml
-    # document. In previous version this filter redirected any output to `$stdout`
-    # to the Haml document, this was not threadsafe and has been removed, you
-    # should use `haml_io` instead.
-    #
     # Not available if the {file:REFERENCE.md#suppress_eval-option `:suppress_eval`}
     # option is set to true. The Ruby code is evaluated in the same context as
     # the Haml template.
@@ -282,17 +276,7 @@ RUBY
       # @see Base#compile
       def compile(compiler, text)
         return if compiler.options[:suppress_eval]
-        compiler.instance_eval do
-          push_silent "#{<<-FIRST.tr("\n", ';')}#{text}#{<<-LAST.tr("\n", ';')}"
-            begin
-              haml_io = StringIO.new(_hamlout.buffer, 'a')
-          FIRST
-            ensure
-              haml_io.close
-              haml_io = nil
-            end
-          LAST
-        end
+        compiler.send(:push_silent, "#{text}")
       end
     end
 

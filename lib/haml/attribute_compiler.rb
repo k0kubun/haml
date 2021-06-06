@@ -51,7 +51,7 @@ module Haml
     # @param dynamic_attributes [Haml::Parser::DynamicAttributes]
     # @return [String] Attributes rendering code
     def compile_runtime_build(attributes, object_ref, dynamic_attributes)
-      "_hamlout.attributes(#{to_literal(attributes)}, #{object_ref}, #{dynamic_attributes.to_literal})"
+      "::Haml::AttributeBuilder.build(#{to_literal(attributes)}, #{object_ref}, #{dynamic_attributes.to_literal})"
     end
 
     # Build array of grouped values whose sort order may go back and forth, which is also sorted with key name.
@@ -106,7 +106,7 @@ module Haml
       hash_content = values.group_by(&:key).map do |key, values_for_key|
         "#{frozen_string(key)} => #{merged_value(key, values_for_key)}"
       end.join(', ')
-      [:dynamic, "_hamlout.attributes({ #{hash_content} }, nil)"]
+      [:dynamic, "::Haml::AttributeBuilder.build({ #{hash_content} }, nil)"]
     end
 
     # Renders attribute values statically.

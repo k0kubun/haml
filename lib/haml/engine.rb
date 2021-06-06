@@ -122,12 +122,10 @@ module Haml
         scope = scope_object.instance_eval{binding}
       end
 
-      set_locals(locals.merge(:_hamlout => buffer, :_erbout => buffer.buffer), scope, scope_object)
-
       scope_object.extend(Haml::Helpers)
       scope_object.instance_variable_set(:@haml_buffer, buffer)
       begin
-        eval(@temple_engine.precompiled_with_return_value, scope, @options.filename, @options.line)
+        eval(@temple_engine.precompiled, scope, @options.filename, @options.line)
       rescue ::SyntaxError => e
         raise SyntaxError, e.message
       end
@@ -159,9 +157,8 @@ module Haml
     # The proc doesn't take a block; any yields in the template will fail.
     #
     # @param scope [Binding, Object] The context in which the template is evaluated
-    # @param local_names [Array<Symbol>] The names of the locals that can be passed to the proc
     # @return [Proc] The proc that will run the template
-    def render_proc(scope = Object.new, *local_names)
+    def render_proc(scope = Object.new)
       if scope.is_a?(Binding)
         scope_object = eval("self", scope)
       else
@@ -170,9 +167,8 @@ module Haml
       end
 
       begin
-        str = @temple_engine.precompiled_with_ambles(local_names)
         eval(
-          "Proc.new { |*_haml_locals| _haml_locals = _haml_locals[0] || {}; #{str}}\n",
+          "Proc.new { #{@temple_engine.precompiled} }",
           scope,
           @options.filename,
           @options.line
@@ -219,20 +215,11 @@ module Haml
     #
     # @param object [Object, Module] The object on which to define the method
     # @param name [String, Symbol] The name of the method to define
-    # @param local_names [Array<Symbol>] The names of the locals that can be passed to the proc
-    def def_method(object, name, *local_names)
+    def def_method(object, name)
       method = object.is_a?(Module) ? :module_eval : :instance_eval
 
-      object.send(method, "def #{name}(_haml_locals = {}); #{@temple_engine.precompiled_with_ambles(local_names)}; end",
+      object.send(method, "def #{name}; #{@temple_engine.precompiled}; end",
                   @options.filename, @options.line)
-    end
-
-    private
-
-    def set_locals(locals, scope, scope_object)
-      scope_object.instance_variable_set :@_haml_locals, locals
-      set_locals = locals.keys.map { |k| "#{k} = @_haml_locals[#{k.inspect}]" }.join("\n")
-      eval(set_locals, scope)
     end
   end
 end
